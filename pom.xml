@@ -12,7 +12,7 @@
 
     <groupId>com.developcollect</groupId>
     <artifactId>common-pay-spring-boot-starter</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.1</version>
 
     <name>common-pay-spring-boot-starter</name>
     <url>http://www.example.com</url>
@@ -48,11 +48,10 @@
         <java.version>1.8</java.version>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
-        <chartset.UTF8>UTF-8</chartset.UTF8>
 
 
         <lombok.version>1.18.12</lombok.version>
-        <common-pay.version>1.0.0</common-pay.version>
+        <common-pay.version>[1.0.0,1.8.0)</common-pay.version>
         <annotations.version>3.0.1</annotations.version>
     </properties>
 
@@ -119,9 +118,9 @@
                 <artifactId>maven-javadoc-plugin</artifactId>
                 <version>3.1.1</version>
                 <configuration>
-                    <encoding>${chartset.UTF8}</encoding>
-                    <charset>${chartset.UTF8}</charset>
-                    <docencoding>${chartset.UTF8}</docencoding>
+                    <encoding>${encoding}</encoding>
+                    <charset>${encoding}</charset>
+                    <docencoding>${encoding}</docencoding>
                 </configuration>
                 <executions>
                     <execution>
