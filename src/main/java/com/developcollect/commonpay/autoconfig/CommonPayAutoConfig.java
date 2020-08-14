@@ -144,7 +144,7 @@ public class CommonPayAutoConfig {
 
         // region 支付宝支付配置
 
-        @ConditionalOnProperty(prefix = "zak.pay", name = "alipay.appid")
+        @ConditionalOnProperty(prefix = "develop-collect.pay", name = "alipay.appid")
         @ConditionalOnMissingBean(name = "aliPayConfigSupplier")
         @Bean
         Supplier<AliPayConfig> aliPayConfigSupplier(
@@ -215,7 +215,7 @@ public class CommonPayAutoConfig {
 
         // region 微信支付配置
 
-        @ConditionalOnProperty(prefix = "zak.pay", name = "wxpay.appid")
+        @ConditionalOnProperty(prefix = "develop-collect.pay", name = "wxpay.appid")
         @ConditionalOnMissingBean(name = "wxPayConfigSupplier")
         @Bean
         Supplier<WxPayConfig> wxPayConfigSupplier(
@@ -278,7 +278,7 @@ public class CommonPayAutoConfig {
             return (order, refund) -> String.format("%s/cPay/wxpay/refund", commonPayProperties.getUrlPrefix());
         }
 
-        @ConditionalOnProperty(prefix = "zak.pay", name = "wxpay.cert-location")
+        @ConditionalOnProperty(prefix = "develop-collect.pay", name = "wxpay.cert-location")
         @ConditionalOnMissingBean(name = "wxPayCertInputStreamSupplier")
         @Bean
         Supplier<InputStream> wxPayCertInputStreamSupplier() {

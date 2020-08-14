@@ -12,7 +12,7 @@
 
     <groupId>com.developcollect</groupId>
     <artifactId>common-pay-spring-boot-starter</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>1.0.0</version>
 
     <name>common-pay-spring-boot-starter</name>
     <url>http://www.example.com</url>
@@ -50,6 +50,8 @@
 
         <lombok.version>1.18.12</lombok.version>
         <common-pay.version>1.0.0</common-pay.version>
+
+        <annotations.version>3.0.1</annotations.version>
     </properties>
 
     <dependencies>
@@ -88,11 +90,29 @@
             <version>${junit.version}</version>
             <scope>test</scope>
         </dependency>
+
+        <dependency>
+            <groupId>com.google.code.findbugs</groupId>
+            <artifactId>annotations</artifactId>
+            <version>${annotations.version}</version>
+        </dependency>
     </dependencies>
 
 
     <build>
         <plugins>
+<!--            <plugin>-->
+<!--                <groupId>org.springframework.boot</groupId>-->
+<!--                <artifactId>spring-boot-maven-plugin</artifactId>-->
+<!--            </plugin>-->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                </configuration>
+            </plugin>
             <!--生成Source jar文件-->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -148,7 +168,7 @@
                 <configuration>
                     <serverId>ossrh</serverId>
                     <nexusUrl>https://oss.sonatype.org/</nexusUrl>
-                    <autoReleaseAfterClose>true</autoReleaseAfterClose>
+                    <autoReleaseAfterClose>false</autoReleaseAfterClose>
                 </configuration>
             </plugin>
         </plugins>

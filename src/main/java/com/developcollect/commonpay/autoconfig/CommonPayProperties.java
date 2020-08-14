@@ -16,7 +16,7 @@ import java.util.Optional;
  * @since 1.0.0
  */
 @Data
-@ConfigurationProperties(prefix = "zak.pay")
+@ConfigurationProperties(prefix = "develop-collect.pay")
 public class CommonPayProperties implements EnvironmentAware {
 
     @Override

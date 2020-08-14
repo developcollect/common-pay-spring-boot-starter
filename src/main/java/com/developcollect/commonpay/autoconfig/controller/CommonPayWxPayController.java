@@ -27,7 +27,7 @@ import java.util.Map;
  * @since 1.0.0
  */
 @Slf4j
-@ConditionalOnExpression("${zak.pay.notify-endpoint.enabled:true}")
+@ConditionalOnExpression("${develop-collect.pay.notify-endpoint.enabled:true}")
 @RestController
 @RequestMapping("/cPay")
 public class CommonPayWxPayController extends BaseController {

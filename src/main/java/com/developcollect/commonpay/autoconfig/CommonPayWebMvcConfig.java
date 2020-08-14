@@ -8,7 +8,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 
 @Slf4j
-@ConditionalOnExpression("${zak.pay.resource-endpoint.enabled:true}")
+@ConditionalOnExpression("${develop-collect.pay.resource-endpoint.enabled:true}")
 @Configuration
 public class CommonPayWebMvcConfig implements WebMvcConfigurer {
 
