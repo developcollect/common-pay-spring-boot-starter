@@ -15,8 +15,7 @@ public class CommonPayWebMvcConfig implements WebMvcConfigurer {
 
 
     /**
-     * 收款二维码
-     *
+     * 静态资源映射
      */
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {

@@ -148,10 +148,12 @@ public class CommonPayAutoConfig {
         @ConditionalOnMissingBean(name = "aliPayConfigSupplier")
         @Bean
         Supplier<AliPayConfig> aliPayConfigSupplier(
-                @Nullable @Qualifier("aliPayReturnUrlGenerator") Function<IOrder, String> aliPayReturnUrlGenerator,
+                @Nullable @Qualifier("aliPayPcReturnUrlGenerator") Function<IOrder, String> aliPayPcReturnUrlGenerator,
+                @Nullable @Qualifier("aliPayWapReturnUrlGenerator") Function<IOrder, String> aliPayWapReturnUrlGenerator,
                 @Qualifier("aliPayPayNotifyUrlGenerator") Function<IOrder, String> aliPayPayNotifyUrlGenerator,
                 @Qualifier("aliPayPayQrCodeAccessUrlGenerator") BiFunction<IOrder, String, String> aliPayPayQrCodeAccessUrlGenerator,
-                @Qualifier("aliPayPayFormHtmlAccessUrlGenerator") BiFunction<IOrder, String, String> aliPayPayFormHtmlAccessUrlGenerator
+                @Qualifier("aliPayPcPayFormHtmlAccessUrlGenerator") BiFunction<IOrder, String, String> aliPayPcPayFormHtmlAccessUrlGenerator,
+                @Qualifier("aliPayWapPayFormHtmlAccessUrlGenerator") BiFunction<IOrder, String, String> aliPayWapPayFormHtmlAccessUrlGenerator
         ) {
             AliPayProperties aliPayProperties = commonPayProperties.getAlipay();
             if (StrUtil.isBlank(aliPayProperties.getAppid())) {
@@ -179,10 +181,12 @@ public class CommonPayAutoConfig {
                             .setDebug(aliPayProperties.isUseSandbox())
                             .setQrCodeWidth(aliPayProperties.getQrCodeWidth())
                             .setQrCodeHeight(aliPayProperties.getQrCodeHeight())
-                            .setReturnUrlGenerator(aliPayReturnUrlGenerator)
+                            .setPcReturnUrlGenerator(aliPayPcReturnUrlGenerator)
+                            .setWapReturnUrlGenerator(aliPayWapReturnUrlGenerator)
                             .setPayNotifyUrlGenerator(aliPayPayNotifyUrlGenerator)
                             .setPayQrCodeAccessUrlGenerator(aliPayPayQrCodeAccessUrlGenerator)
-                            .setPayFormHtmlAccessUrlGenerator(aliPayPayFormHtmlAccessUrlGenerator);
+                            .setPcPayFormHtmlAccessUrlGenerator(aliPayPcPayFormHtmlAccessUrlGenerator)
+                            .setWapPayFormHtmlAccessUrlGenerator(aliPayWapPayFormHtmlAccessUrlGenerator);
                 }
 
                 @Override
@@ -204,10 +208,16 @@ public class CommonPayAutoConfig {
             return (order, content) -> payQrCodeAccessUrl(PayPlatform.ALI_PAY, order, content);
         }
 
-        @ConditionalOnMissingBean(name = "aliPayPayFormHtmlAccessUrlGenerator")
+        @ConditionalOnMissingBean(name = "aliPayPcPayFormHtmlAccessUrlGenerator")
         @Bean
-        BiFunction<IOrder, String, String> aliPayPayFormHtmlAccessUrlGenerator() {
-            return (order, content) -> payFormHtmlAccessUrl(PayPlatform.ALI_PAY, order, content);
+        BiFunction<IOrder, String, String> aliPayPcPayFormHtmlAccessUrlGenerator() {
+            return (order, content) -> pcPayFormHtmlAccessUrl(PayPlatform.ALI_PAY, order, content);
+        }
+
+        @ConditionalOnMissingBean(name = "aliPayWapPayFormHtmlAccessUrlGenerator")
+        @Bean
+        BiFunction<IOrder, String, String> aliPayWapPayFormHtmlAccessUrlGenerator() {
+            return (order, content) -> wapPayFormHtmlAccessUrl(PayPlatform.ALI_PAY, order, content);
         }
 
         // endregion
@@ -307,11 +317,18 @@ public class CommonPayAutoConfig {
         }
 
 
-        private String payFormHtmlAccessUrl(int payPlatform, IOrder order, String html) {
+        private String pcPayFormHtmlAccessUrl(int payPlatform, IOrder order, String html) {
             String payPlatformName = payPlatformName(payPlatform);
             File payHtmlFile = new File(String.format("%s/cPay/%s/%s.html", CommonPaySpringUtil.appHome(), payPlatformName, order.getOutTradeNo()));
             FileUtil.writeString(html, payHtmlFile, StandardCharsets.UTF_8);
             return String.format("%s/cPay/r/%s/%s.html", commonPayProperties.getUrlPrefix(), payPlatformName, order.getOutTradeNo());
+        }
+
+        private String wapPayFormHtmlAccessUrl(int payPlatform, IOrder order, String html) {
+            String payPlatformName = payPlatformName(payPlatform);
+            File payHtmlFile = new File(String.format("%s/cPay/%s/wap_%s.html", CommonPaySpringUtil.appHome(), payPlatformName, order.getOutTradeNo()));
+            FileUtil.writeString(html, payHtmlFile, StandardCharsets.UTF_8);
+            return String.format("%s/cPay/r/%s/wap_%s.html", commonPayProperties.getUrlPrefix(), payPlatformName, order.getOutTradeNo());
         }
 
         private String payQrCodeAccessUrl(int payPlatform, IOrder order, String content) {
