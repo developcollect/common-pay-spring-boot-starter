@@ -2,7 +2,7 @@
 
 ### 简介
 
-common-pay-spring-boot-starter是一个common-pay的spring boot自动配置器，为common-pay提供了各项必须组件的默认配置，已达到只需在spring配置文件中配置支付平台参数*(如appId, key等等)*即可使用的程度。并各项配置都支持自定义组件覆盖，使用案例见[common-pay-sample](https://github.com/developcollect/common-pay-sample)。
+[common-pay-spring-boot-starter](https://github.com/developcollect/common-pay-spring-boot-starter)是一个[common-pay](https://github.com/developcollect/common-pay)的spring boot自动配置器，为[common-pay](https://github.com/developcollect/common-pay)提供了各项必须组件的默认配置，已达到只需在spring配置文件中配置支付平台参数*(如appId, key等等)*即可使用的程度。并各项配置都支持自定义组件覆盖，使用案例见[common-pay-sample](https://github.com/developcollect/common-pay-sample)。
 
 
 
