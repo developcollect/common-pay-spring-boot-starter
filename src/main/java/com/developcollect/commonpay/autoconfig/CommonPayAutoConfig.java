@@ -10,6 +10,7 @@ import com.developcollect.commonpay.notice.IPayBroadcaster;
 import com.developcollect.commonpay.notice.IRefundBroadcaster;
 import com.developcollect.commonpay.pay.IOrder;
 import com.developcollect.commonpay.pay.IRefund;
+import com.developcollect.commonpay.pay.PayResponse;
 import com.developcollect.commonpay.utils.LambdaUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -34,8 +35,10 @@ import java.io.File;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiFunction;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -153,7 +156,8 @@ public class CommonPayAutoConfig {
                 @Qualifier("aliPayPayNotifyUrlGenerator") Function<IOrder, String> aliPayPayNotifyUrlGenerator,
                 @Qualifier("aliPayPayQrCodeAccessUrlGenerator") BiFunction<IOrder, String, String> aliPayPayQrCodeAccessUrlGenerator,
                 @Qualifier("aliPayPcPayFormHtmlAccessUrlGenerator") BiFunction<IOrder, String, String> aliPayPcPayFormHtmlAccessUrlGenerator,
-                @Qualifier("aliPayWapPayFormHtmlAccessUrlGenerator") BiFunction<IOrder, String, String> aliPayWapPayFormHtmlAccessUrlGenerator
+                @Qualifier("aliPayWapPayFormHtmlAccessUrlGenerator") BiFunction<IOrder, String, String> aliPayWapPayFormHtmlAccessUrlGenerator,
+                @Qualifier("aliPayTempFileClear") Consumer<PayResponse> aliPayTempFileClear
         ) {
             AliPayProperties aliPayProperties = commonPayProperties.getAlipay();
             if (StrUtil.isBlank(aliPayProperties.getAppid())) {
@@ -186,7 +190,9 @@ public class CommonPayAutoConfig {
                             .setPayNotifyUrlGenerator(aliPayPayNotifyUrlGenerator)
                             .setPayQrCodeAccessUrlGenerator(aliPayPayQrCodeAccessUrlGenerator)
                             .setPcPayFormHtmlAccessUrlGenerator(aliPayPcPayFormHtmlAccessUrlGenerator)
-                            .setWapPayFormHtmlAccessUrlGenerator(aliPayWapPayFormHtmlAccessUrlGenerator);
+                            .setWapPayFormHtmlAccessUrlGenerator(aliPayWapPayFormHtmlAccessUrlGenerator)
+                            // 扩展配置
+                            .putExtend("aliPayTempFileClear", aliPayTempFileClear);
                 }
 
                 @Override
@@ -220,6 +226,13 @@ public class CommonPayAutoConfig {
             return (order, content) -> wapPayFormHtmlAccessUrl(PayPlatform.ALI_PAY, order, content);
         }
 
+
+        @ConditionalOnMissingBean(name = "aliPayTempFileClear")
+        @Bean
+        Consumer<PayResponse> aliPayTempFileClear() {
+            return this::clearTempFile;
+        }
+
         // endregion
 
 
@@ -232,7 +245,8 @@ public class CommonPayAutoConfig {
                 @Qualifier("wxPayPayNotifyUrlGenerator") Function<IOrder, String> wxPayPayNotifyUrlGenerator,
                 @Qualifier("wxPayPayQrCodeAccessUrlGenerator") BiFunction<IOrder, String, String> wxPayPayQrCodeAccessUrlGenerator,
                 @Qualifier("wxPayRefundNotifyUrlGenerator") BiFunction<IOrder, IRefund, String> wxPayRefundNotifyUrlGenerator,
-                @Nullable @Qualifier("wxPayCertInputStreamSupplier") Supplier<InputStream> wxPayCertInputStreamSupplier
+                @Nullable @Qualifier("wxPayCertInputStreamSupplier") Supplier<InputStream> wxPayCertInputStreamSupplier,
+                @Qualifier("wxPayTempFileClear") Consumer<PayResponse> wxPayTempFileClear
         ) {
             WxPayProperties wxPayProperties = commonPayProperties.getWxpay();
             if (StrUtil.isBlank(wxPayProperties.getAppid())) {
@@ -260,7 +274,9 @@ public class CommonPayAutoConfig {
                             .setQrCodeHeight(wxPayProperties.getQrCodeHeight())
                             .setPayNotifyUrlGenerator(wxPayPayNotifyUrlGenerator)
                             .setRefundNotifyUrlGenerator(wxPayRefundNotifyUrlGenerator)
-                            .setPayQrCodeAccessUrlGenerator(wxPayPayQrCodeAccessUrlGenerator);
+                            .setPayQrCodeAccessUrlGenerator(wxPayPayQrCodeAccessUrlGenerator)
+                            // 扩展配置
+                            .putExtend("wxPayTempFileClear", wxPayTempFileClear);
                 }
 
                 @Override
@@ -295,6 +311,11 @@ public class CommonPayAutoConfig {
             return () -> LambdaUtil.doThrow(() -> getResource(commonPayProperties.getWxpay().getCertLocation()).getInputStream());
         }
 
+        @ConditionalOnMissingBean(name = "wxPayTempFileClear")
+        @Bean
+        Consumer<PayResponse> wxPayTempFileClear() {
+            return this::clearTempFile;
+        }
         // endregion
 
 
@@ -339,6 +360,15 @@ public class CommonPayAutoConfig {
             int qrCodeHeight = payConfig.getQrCodeHeight();
             QrCodeUtil.generate(content, qrCodeWidth, qrCodeHeight, qrCodeFile);
             return String.format("%s/cPay/r/%s/%s.png", commonPayProperties.getUrlPrefix(), payPlatformName, order.getOutTradeNo());
+        }
+
+        private void clearTempFile(PayResponse payResponse) {
+            String payPlatformName = payPlatformName(payResponse.getPayPlatform());
+            String appHome = CommonPaySpringUtil.appHome();
+            String outTradeNo = payResponse.getOutTradeNo();
+            FileUtil.del(String.format("%s/cPay/%s/%s.png", appHome, payPlatformName, outTradeNo));
+            FileUtil.del(String.format("%s/cPay/%s/%s.html", appHome, payPlatformName, outTradeNo));
+            FileUtil.del(String.format("%s/cPay/%s/wap_%s.html", appHome, payPlatformName, outTradeNo));
         }
 
         private String payPlatformName(int payPlatform) {

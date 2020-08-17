@@ -20,6 +20,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.Map;
+import java.util.function.Consumer;
 
 /**
  * 微信支付通知接收控制器
@@ -56,6 +57,16 @@ public class CommonPayWxPayController extends BaseController {
 
             // 发送广播
             if (GlobalConfig.payBroadcaster().broadcast(payResponse)) {
+                try {
+                    Consumer<PayResponse> wxPayTempFileClear = GlobalConfig
+                            .getPayConfig(PayPlatform.ALI_PAY)
+                            .getExtend("wxPayTempFileClear");
+                    if (wxPayTempFileClear != null) {
+                        wxPayTempFileClear.accept(payResponse);
+                    }
+                } catch (Exception e) {
+                    log.debug("清除临时文件失败", e);
+                }
                 return SUCCESS_RET;
             }
         } catch (Exception e) {

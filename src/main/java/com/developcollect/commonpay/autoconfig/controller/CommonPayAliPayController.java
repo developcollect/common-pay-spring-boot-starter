@@ -6,6 +6,7 @@ import com.alipay.api.internal.util.AlipaySignature;
 import com.developcollect.commonpay.PayPlatform;
 import com.developcollect.commonpay.config.AliPayConfig;
 import com.developcollect.commonpay.config.GlobalConfig;
+import com.developcollect.commonpay.pay.IOrder;
 import com.developcollect.commonpay.pay.PayResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.servlet.http.HttpServletRequest;
 import java.io.Serializable;
 import java.util.Map;
+import java.util.function.Consumer;
 
 /**
  * 支付宝通知接收控制器
@@ -55,6 +57,17 @@ public class CommonPayAliPayController extends BaseController {
 
             // 发送广播
             if (GlobalConfig.payBroadcaster().broadcast(payResponse)) {
+                try {
+                    Consumer<PayResponse> aliPayTempFileClear = GlobalConfig
+                            .getPayConfig(PayPlatform.ALI_PAY)
+                            .getExtend("aliPayTempFileClear");
+                    if (aliPayTempFileClear != null) {
+                        aliPayTempFileClear.accept(payResponse);
+                    }
+                } catch (Exception e) {
+                    log.debug("清除临时文件失败", e);
+                }
+
                 return SUCCESS_RET;
             }
 
