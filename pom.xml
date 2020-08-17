@@ -15,7 +15,7 @@
     <version>1.8.2</version>
 
     <name>common-pay-spring-boot-starter</name>
-    <url>http://www.example.com</url>
+    <url>https://github.com/developcollect/common-pay-spring-boot-starter</url>
     <description>
         this is a spring boot starter for common-pay
     </description>
