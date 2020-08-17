@@ -69,23 +69,48 @@ public class CommonPayAutoConfig {
     }
 
 
+    /**
+     * 默认配置器
+     */
     @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     @ConditionalOnMissingBean(CommonPayConfigurer.class)
     @Configuration
     @RequiredArgsConstructor
     static class DefaultCommonPayConfigurer implements CommonPayConfigurer {
 
+        /**
+         * 支付配置属性
+         */
         private final CommonPayProperties commonPayProperties;
 
+        /**
+         * 支付宝配置提供器
+         */
         private Supplier<AliPayConfig> aliPayConfigSupplier;
 
+        /**
+         * 微信配置提供器
+         */
         private Supplier<WxPayConfig> wxPayConfigSupplier;
 
+        /**
+         * Pay工厂
+         */
         private IPayFactory payFactory;
 
+        /**
+         * 支付结果广播器
+         */
         private IPayBroadcaster payBroadcaster;
 
+        /**
+         * 退款结果广播器
+         */
         private IRefundBroadcaster refundBroadcaster;
+
+
+
+        // 注意自动注入是指定了bean的名称的
 
         @Autowired(required = false)
         @Qualifier("aliPayConfigSupplier")
@@ -116,19 +141,26 @@ public class CommonPayAutoConfig {
 
         @Override
         public void config(GlobalConfig globalConfig) {
+            // 校验配置的值
             checkContextPath(commonPayProperties.getContextPath());
             checkDomain(commonPayProperties.getDomain());
 
+            // 支付平台 与 支付配置提供器 map
+            // 后续的支付过程会根据支付平台到这个map中取相应的支付配置提供器，从而拿到相应的支付配置
             Map<Integer, Supplier<? extends AbstractPayConfig>> payConfigSupplierMap = globalConfig.getPayConfigSupplierMap();
 
+            // 设置主动查询通知间隔时间， 用于控制主动查询支付状态的频率
             globalConfig.setQueryNoticeDelay(commonPayProperties.getQueryNoticeDelay());
 
+            // 设置支付宝配置提供器
             if (aliPayConfigSupplier != null) {
                 payConfigSupplierMap.put(PayPlatform.ALI_PAY, aliPayConfigSupplier);
                 log.info("支付宝支付通知地址：{}/cPay/alipay", commonPayProperties.getUrlPrefix());
             } else {
                 log.info("未找到支付宝支付配置");
             }
+
+            // 设置微信配置提供器
             if (wxPayConfigSupplier != null) {
                 payConfigSupplierMap.put(PayPlatform.WX_PAY, wxPayConfigSupplier);
                 log.info("微信支付通知地址：{}/cPay/wxpay", commonPayProperties.getUrlPrefix());
@@ -136,17 +168,29 @@ public class CommonPayAutoConfig {
                 log.info("未找到微信支付配置");
             }
 
+            // 设置支付结果广播器（必须）
             globalConfig.setPayBroadcaster(payBroadcaster);
+            // 设置退款结果广播器
             globalConfig.setRefundBroadcaster(refundBroadcaster);
 
+            // 设置Pay工厂， 因为common-pay中有默认的工厂， 所以只有在payFactory不为null的时候才覆盖原有的工厂
             if (payFactory != null) {
                 globalConfig.setPayFactory(payFactory);
             }
-
         }
 
         // region 支付宝支付配置
 
+        /**
+         * 支付宝配置提供器
+         * 注意： 注入的各参数都有指定Bean名称
+         * @param aliPayPcReturnUrlGenerator 支付宝PC页面支付完成跳转地址生成器
+         * @param aliPayWapReturnUrlGenerator 支付宝WAP页面支付完成跳转地址生成器
+         * @param aliPayPayNotifyUrlGenerator 支付宝支付结果异步通知地址生成器
+         * @param aliPayPayQrCodeAccessUrlGenerator 支付宝支付二维码访问地址生成器
+         * @param aliPayPcPayFormHtmlAccessUrlGenerator 支付宝PC页面支付页面访问地址生成器
+         * @param aliPayWapPayFormHtmlAccessUrlGenerator 支付宝WAP页面支付页面访问地址生成器
+         */
         @ConditionalOnProperty(prefix = "develop-collect.pay", name = "alipay.appid")
         @ConditionalOnMissingBean(name = "aliPayConfigSupplier")
         @Bean
@@ -202,24 +246,36 @@ public class CommonPayAutoConfig {
             };
         }
 
+        /**
+         * 支付宝支付结果异步通知地址生成器
+         */
         @ConditionalOnMissingBean(name = "aliPayPayNotifyUrlGenerator")
         @Bean
         Function<IOrder, String> aliPayPayNotifyUrlGenerator() {
             return o -> String.format("%s/cPay/alipay", commonPayProperties.getUrlPrefix());
         }
 
+        /**
+         * 支付宝支付二维码访问地址生成器
+         */
         @ConditionalOnMissingBean(name = "aliPayPayQrCodeAccessUrlGenerator")
         @Bean
         BiFunction<IOrder, String, String> aliPayPayQrCodeAccessUrlGenerator() {
             return (order, content) -> payQrCodeAccessUrl(PayPlatform.ALI_PAY, order, content);
         }
 
+        /**
+         * 支付宝PC支付页面访问地址生成器
+         */
         @ConditionalOnMissingBean(name = "aliPayPcPayFormHtmlAccessUrlGenerator")
         @Bean
         BiFunction<IOrder, String, String> aliPayPcPayFormHtmlAccessUrlGenerator() {
             return (order, content) -> pcPayFormHtmlAccessUrl(PayPlatform.ALI_PAY, order, content);
         }
 
+        /**
+         * 支付宝WAP支付页面访问地址生成器
+         */
         @ConditionalOnMissingBean(name = "aliPayWapPayFormHtmlAccessUrlGenerator")
         @Bean
         BiFunction<IOrder, String, String> aliPayWapPayFormHtmlAccessUrlGenerator() {
@@ -238,6 +294,13 @@ public class CommonPayAutoConfig {
 
         // region 微信支付配置
 
+        /**
+         * 微信配置提供其
+         * @param wxPayPayNotifyUrlGenerator 微信支付结果异步通知地址生成器
+         * @param wxPayPayQrCodeAccessUrlGenerator 微信支付二维码访问地址生成器
+         * @param wxPayRefundNotifyUrlGenerator 微信退款结果异步通知地址生成器
+         * @param wxPayCertInputStreamSupplier 微信接口调用证书提供器(有的功能需要证书)
+         */
         @ConditionalOnProperty(prefix = "develop-collect.pay", name = "wxpay.appid")
         @ConditionalOnMissingBean(name = "wxPayConfigSupplier")
         @Bean
@@ -286,24 +349,37 @@ public class CommonPayAutoConfig {
             };
         }
 
+        /**
+         * 微信支付结果异步通知地址生成器
+         */
         @ConditionalOnMissingBean(name = "wxPayPayNotifyUrlGenerator")
         @Bean
         Function<IOrder, String> wxPayPayNotifyUrlGenerator() {
             return o -> String.format("%s/cPay/wxpay", commonPayProperties.getUrlPrefix());
         }
 
+        /**
+         * 微信支付二维码访问地址生成器
+         */
         @ConditionalOnMissingBean(name = "wxPayPayQrCodeAccessUrlGenerator")
         @Bean
         BiFunction<IOrder, String, String> wxPayPayQrCodeAccessUrlGenerator() {
             return (order, content) -> payQrCodeAccessUrl(PayPlatform.WX_PAY, order, content);
         }
 
+        /**
+         * 微信退款结果异步通知地址生成器
+         */
         @ConditionalOnMissingBean(name = "wxPayRefundNotifyUrlGenerator")
         @Bean
         BiFunction<IOrder, IRefund, String> wxPayRefundNotifyUrlGenerator() {
             return (order, refund) -> String.format("%s/cPay/wxpay/refund", commonPayProperties.getUrlPrefix());
         }
 
+        /**
+         * 微信接口调用证书提供其
+         * 微信退款时需要证书
+         */
         @ConditionalOnProperty(prefix = "develop-collect.pay", name = "wxpay.cert-location")
         @ConditionalOnMissingBean(name = "wxPayCertInputStreamSupplier")
         @Bean
@@ -319,6 +395,9 @@ public class CommonPayAutoConfig {
         // endregion
 
 
+        /**
+         * 支付结果广播器
+         */
         @ConditionalOnMissingBean(value = IPayBroadcaster.class)
         @Bean
         IPayBroadcaster payBroadcaster() {
@@ -328,6 +407,9 @@ public class CommonPayAutoConfig {
             };
         }
 
+        /**
+         * 退款结果广播器
+         */
         @ConditionalOnMissingBean(value = IRefundBroadcaster.class)
         @Bean
         IRefundBroadcaster refundBroadcaster() {
