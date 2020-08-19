@@ -155,7 +155,12 @@ public class CommonPayAutoConfig {
             // 设置支付宝配置提供器
             if (aliPayConfigSupplier != null) {
                 payConfigSupplierMap.put(PayPlatform.ALI_PAY, aliPayConfigSupplier);
-                log.info("支付宝支付通知地址：{}/cPay/alipay", commonPayProperties.getUrlPrefix());
+                try {
+                    String aliPayNotifyUrlExample = aliPayConfigSupplier.get().getPayNotifyUrlGenerator().apply(ExampleOrder.getAliPayExampleOrder());
+                    log.info("支付宝支付通知地址：{}", aliPayNotifyUrlExample);
+                } catch (Exception e) {
+                    log.warn("支付宝支付通知示例地址生成失败", e);
+                }
             } else {
                 log.info("未找到支付宝支付配置");
             }
@@ -163,7 +168,12 @@ public class CommonPayAutoConfig {
             // 设置微信配置提供器
             if (wxPayConfigSupplier != null) {
                 payConfigSupplierMap.put(PayPlatform.WX_PAY, wxPayConfigSupplier);
-                log.info("微信支付通知地址：{}/cPay/wxpay", commonPayProperties.getUrlPrefix());
+                try {
+                    String wxPayNotifyUrlExample = wxPayConfigSupplier.get().getPayNotifyUrlGenerator().apply(ExampleOrder.getWxPayExampleOrder());
+                    log.info("微信支付通知地址：{}", wxPayNotifyUrlExample);
+                } catch (Exception e) {
+                    log.warn("微信支付通知示例地址生成失败", e);
+                }
             } else {
                 log.info("未找到微信支付配置");
             }

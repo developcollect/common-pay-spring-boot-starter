@@ -12,7 +12,7 @@
 
     <groupId>com.developcollect</groupId>
     <artifactId>common-pay-spring-boot-starter</artifactId>
-    <version>1.8.2</version>
+    <version>1.8.3</version>
 
     <name>common-pay-spring-boot-starter</name>
     <url>https://github.com/developcollect/common-pay-spring-boot-starter</url>
