@@ -1,7 +1,7 @@
 package com.developcollect.commonpay.autoconfig;
 
 import com.developcollect.commonpay.PayPlatform;
-import com.developcollect.commonpay.pay.IOrder;
+import com.developcollect.commonpay.pay.IPayDTO;
 import lombok.AllArgsConstructor;
 
 /**
@@ -12,7 +12,7 @@ import lombok.AllArgsConstructor;
  * 仅限于授权后使用，禁止非授权传阅以及私自用于商业目的。
  */
 @AllArgsConstructor
-class ExampleOrder implements IOrder {
+class ExamplePayDTO implements IPayDTO {
 
     private String outTradeNo;
     private String tradeNo;
@@ -46,11 +46,11 @@ class ExampleOrder implements IOrder {
         return null;
     }
 
-    public static ExampleOrder getAliPayExampleOrder() {
-        return new ExampleOrder("{outTradeNo}", "{tradeNo}", 100L, PayPlatform.ALI_PAY);
+    public static ExamplePayDTO getAliPayExamplePayDTO() {
+        return new ExamplePayDTO("{outTradeNo}", "{tradeNo}", 100L, PayPlatform.ALI_PAY);
     }
 
-    public static ExampleOrder getWxPayExampleOrder() {
-        return new ExampleOrder("{outTradeNo}", "{tradeNo}", 100L, PayPlatform.WX_PAY);
+    public static ExamplePayDTO getWxPayExamplePayDTO() {
+        return new ExamplePayDTO("{outTradeNo}", "{tradeNo}", 100L, PayPlatform.WX_PAY);
     }
 }

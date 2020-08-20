@@ -8,8 +8,8 @@ import com.developcollect.commonpay.PayPlatform;
 import com.developcollect.commonpay.config.*;
 import com.developcollect.commonpay.notice.IPayBroadcaster;
 import com.developcollect.commonpay.notice.IRefundBroadcaster;
-import com.developcollect.commonpay.pay.IOrder;
-import com.developcollect.commonpay.pay.IRefund;
+import com.developcollect.commonpay.pay.IPayDTO;
+import com.developcollect.commonpay.pay.IRefundDTO;
 import com.developcollect.commonpay.pay.PayResponse;
 import com.developcollect.commonpay.utils.LambdaUtil;
 import lombok.RequiredArgsConstructor;
@@ -35,7 +35,6 @@ import java.io.File;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
@@ -156,7 +155,7 @@ public class CommonPayAutoConfig {
             if (aliPayConfigSupplier != null) {
                 payConfigSupplierMap.put(PayPlatform.ALI_PAY, aliPayConfigSupplier);
                 try {
-                    String aliPayNotifyUrlExample = aliPayConfigSupplier.get().getPayNotifyUrlGenerator().apply(ExampleOrder.getAliPayExampleOrder());
+                    String aliPayNotifyUrlExample = aliPayConfigSupplier.get().getPayNotifyUrlGenerator().apply(ExamplePayDTO.getAliPayExamplePayDTO());
                     log.info("支付宝支付通知地址：{}", aliPayNotifyUrlExample);
                 } catch (Exception e) {
                     log.warn("支付宝支付通知示例地址生成失败", e);
@@ -169,7 +168,7 @@ public class CommonPayAutoConfig {
             if (wxPayConfigSupplier != null) {
                 payConfigSupplierMap.put(PayPlatform.WX_PAY, wxPayConfigSupplier);
                 try {
-                    String wxPayNotifyUrlExample = wxPayConfigSupplier.get().getPayNotifyUrlGenerator().apply(ExampleOrder.getWxPayExampleOrder());
+                    String wxPayNotifyUrlExample = wxPayConfigSupplier.get().getPayNotifyUrlGenerator().apply(ExamplePayDTO.getWxPayExamplePayDTO());
                     log.info("微信支付通知地址：{}", wxPayNotifyUrlExample);
                 } catch (Exception e) {
                     log.warn("微信支付通知示例地址生成失败", e);
@@ -205,12 +204,12 @@ public class CommonPayAutoConfig {
         @ConditionalOnMissingBean(name = "aliPayConfigSupplier")
         @Bean
         Supplier<AliPayConfig> aliPayConfigSupplier(
-                @Nullable @Qualifier("aliPayPcReturnUrlGenerator") Function<IOrder, String> aliPayPcReturnUrlGenerator,
-                @Nullable @Qualifier("aliPayWapReturnUrlGenerator") Function<IOrder, String> aliPayWapReturnUrlGenerator,
-                @Qualifier("aliPayPayNotifyUrlGenerator") Function<IOrder, String> aliPayPayNotifyUrlGenerator,
-                @Qualifier("aliPayPayQrCodeAccessUrlGenerator") BiFunction<IOrder, String, String> aliPayPayQrCodeAccessUrlGenerator,
-                @Qualifier("aliPayPcPayFormHtmlAccessUrlGenerator") BiFunction<IOrder, String, String> aliPayPcPayFormHtmlAccessUrlGenerator,
-                @Qualifier("aliPayWapPayFormHtmlAccessUrlGenerator") BiFunction<IOrder, String, String> aliPayWapPayFormHtmlAccessUrlGenerator,
+                @Nullable @Qualifier("aliPayPcReturnUrlGenerator") Function<IPayDTO, String> aliPayPcReturnUrlGenerator,
+                @Nullable @Qualifier("aliPayWapReturnUrlGenerator") Function<IPayDTO, String> aliPayWapReturnUrlGenerator,
+                @Qualifier("aliPayPayNotifyUrlGenerator") Function<IPayDTO, String> aliPayPayNotifyUrlGenerator,
+                @Qualifier("aliPayPayQrCodeAccessUrlGenerator") BiFunction<IPayDTO, String, String> aliPayPayQrCodeAccessUrlGenerator,
+                @Qualifier("aliPayPcPayFormHtmlAccessUrlGenerator") BiFunction<IPayDTO, String, String> aliPayPcPayFormHtmlAccessUrlGenerator,
+                @Qualifier("aliPayWapPayFormHtmlAccessUrlGenerator") BiFunction<IPayDTO, String, String> aliPayWapPayFormHtmlAccessUrlGenerator,
                 @Qualifier("aliPayTempFileClear") Consumer<PayResponse> aliPayTempFileClear
         ) {
             AliPayProperties aliPayProperties = commonPayProperties.getAlipay();
@@ -246,7 +245,7 @@ public class CommonPayAutoConfig {
                             .setPcPayFormHtmlAccessUrlGenerator(aliPayPcPayFormHtmlAccessUrlGenerator)
                             .setWapPayFormHtmlAccessUrlGenerator(aliPayWapPayFormHtmlAccessUrlGenerator)
                             // 扩展配置
-                            .putExtend("aliPayTempFileClear", aliPayTempFileClear);
+                            .putExt("aliPayTempFileClear", aliPayTempFileClear);
                 }
 
                 @Override
@@ -261,7 +260,7 @@ public class CommonPayAutoConfig {
          */
         @ConditionalOnMissingBean(name = "aliPayPayNotifyUrlGenerator")
         @Bean
-        Function<IOrder, String> aliPayPayNotifyUrlGenerator() {
+        Function<IPayDTO, String> aliPayPayNotifyUrlGenerator() {
             return o -> String.format("%s/cPay/alipay", commonPayProperties.getUrlPrefix());
         }
 
@@ -270,8 +269,8 @@ public class CommonPayAutoConfig {
          */
         @ConditionalOnMissingBean(name = "aliPayPayQrCodeAccessUrlGenerator")
         @Bean
-        BiFunction<IOrder, String, String> aliPayPayQrCodeAccessUrlGenerator() {
-            return (order, content) -> payQrCodeAccessUrl(PayPlatform.ALI_PAY, order, content);
+        BiFunction<IPayDTO, String, String> aliPayPayQrCodeAccessUrlGenerator() {
+            return (payDTO, content) -> payQrCodeAccessUrl(PayPlatform.ALI_PAY, payDTO, content);
         }
 
         /**
@@ -279,8 +278,8 @@ public class CommonPayAutoConfig {
          */
         @ConditionalOnMissingBean(name = "aliPayPcPayFormHtmlAccessUrlGenerator")
         @Bean
-        BiFunction<IOrder, String, String> aliPayPcPayFormHtmlAccessUrlGenerator() {
-            return (order, content) -> pcPayFormHtmlAccessUrl(PayPlatform.ALI_PAY, order, content);
+        BiFunction<IPayDTO, String, String> aliPayPcPayFormHtmlAccessUrlGenerator() {
+            return (payDTO, content) -> pcPayFormHtmlAccessUrl(PayPlatform.ALI_PAY, payDTO, content);
         }
 
         /**
@@ -288,8 +287,8 @@ public class CommonPayAutoConfig {
          */
         @ConditionalOnMissingBean(name = "aliPayWapPayFormHtmlAccessUrlGenerator")
         @Bean
-        BiFunction<IOrder, String, String> aliPayWapPayFormHtmlAccessUrlGenerator() {
-            return (order, content) -> wapPayFormHtmlAccessUrl(PayPlatform.ALI_PAY, order, content);
+        BiFunction<IPayDTO, String, String> aliPayWapPayFormHtmlAccessUrlGenerator() {
+            return (payDTO, content) -> wapPayFormHtmlAccessUrl(PayPlatform.ALI_PAY, payDTO, content);
         }
 
 
@@ -315,9 +314,9 @@ public class CommonPayAutoConfig {
         @ConditionalOnMissingBean(name = "wxPayConfigSupplier")
         @Bean
         Supplier<WxPayConfig> wxPayConfigSupplier(
-                @Qualifier("wxPayPayNotifyUrlGenerator") Function<IOrder, String> wxPayPayNotifyUrlGenerator,
-                @Qualifier("wxPayPayQrCodeAccessUrlGenerator") BiFunction<IOrder, String, String> wxPayPayQrCodeAccessUrlGenerator,
-                @Qualifier("wxPayRefundNotifyUrlGenerator") BiFunction<IOrder, IRefund, String> wxPayRefundNotifyUrlGenerator,
+                @Qualifier("wxPayPayNotifyUrlGenerator") Function<IPayDTO, String> wxPayPayNotifyUrlGenerator,
+                @Qualifier("wxPayPayQrCodeAccessUrlGenerator") BiFunction<IPayDTO, String, String> wxPayPayQrCodeAccessUrlGenerator,
+                @Qualifier("wxPayRefundNotifyUrlGenerator") BiFunction<IPayDTO, IRefundDTO, String> wxPayRefundNotifyUrlGenerator,
                 @Nullable @Qualifier("wxPayCertInputStreamSupplier") Supplier<InputStream> wxPayCertInputStreamSupplier,
                 @Qualifier("wxPayTempFileClear") Consumer<PayResponse> wxPayTempFileClear
         ) {
@@ -349,7 +348,7 @@ public class CommonPayAutoConfig {
                             .setRefundNotifyUrlGenerator(wxPayRefundNotifyUrlGenerator)
                             .setPayQrCodeAccessUrlGenerator(wxPayPayQrCodeAccessUrlGenerator)
                             // 扩展配置
-                            .putExtend("wxPayTempFileClear", wxPayTempFileClear);
+                            .putExt("wxPayTempFileClear", wxPayTempFileClear);
                 }
 
                 @Override
@@ -364,7 +363,7 @@ public class CommonPayAutoConfig {
          */
         @ConditionalOnMissingBean(name = "wxPayPayNotifyUrlGenerator")
         @Bean
-        Function<IOrder, String> wxPayPayNotifyUrlGenerator() {
+        Function<IPayDTO, String> wxPayPayNotifyUrlGenerator() {
             return o -> String.format("%s/cPay/wxpay", commonPayProperties.getUrlPrefix());
         }
 
@@ -373,8 +372,8 @@ public class CommonPayAutoConfig {
          */
         @ConditionalOnMissingBean(name = "wxPayPayQrCodeAccessUrlGenerator")
         @Bean
-        BiFunction<IOrder, String, String> wxPayPayQrCodeAccessUrlGenerator() {
-            return (order, content) -> payQrCodeAccessUrl(PayPlatform.WX_PAY, order, content);
+        BiFunction<IPayDTO, String, String> wxPayPayQrCodeAccessUrlGenerator() {
+            return (payDTO, content) -> payQrCodeAccessUrl(PayPlatform.WX_PAY, payDTO, content);
         }
 
         /**
@@ -382,8 +381,8 @@ public class CommonPayAutoConfig {
          */
         @ConditionalOnMissingBean(name = "wxPayRefundNotifyUrlGenerator")
         @Bean
-        BiFunction<IOrder, IRefund, String> wxPayRefundNotifyUrlGenerator() {
-            return (order, refund) -> String.format("%s/cPay/wxpay/refund", commonPayProperties.getUrlPrefix());
+        BiFunction<IPayDTO, IRefundDTO, String> wxPayRefundNotifyUrlGenerator() {
+            return (payDTO, refundDTO) -> String.format("%s/cPay/wxpay/refund", commonPayProperties.getUrlPrefix());
         }
 
         /**
@@ -430,28 +429,28 @@ public class CommonPayAutoConfig {
         }
 
 
-        private String pcPayFormHtmlAccessUrl(int payPlatform, IOrder order, String html) {
+        private String pcPayFormHtmlAccessUrl(int payPlatform, IPayDTO payDTO, String html) {
             String payPlatformName = payPlatformName(payPlatform);
-            File payHtmlFile = new File(String.format("%s/cPay/%s/%s.html", CommonPaySpringUtil.appHome(), payPlatformName, order.getOutTradeNo()));
+            File payHtmlFile = new File(String.format("%s/cPay/%s/%s.html", CommonPaySpringUtil.appHome(), payPlatformName, payDTO.getOutTradeNo()));
             FileUtil.writeString(html, payHtmlFile, StandardCharsets.UTF_8);
-            return String.format("%s/cPay/r/%s/%s.html", commonPayProperties.getUrlPrefix(), payPlatformName, order.getOutTradeNo());
+            return String.format("%s/cPay/r/%s/%s.html", commonPayProperties.getUrlPrefix(), payPlatformName, payDTO.getOutTradeNo());
         }
 
-        private String wapPayFormHtmlAccessUrl(int payPlatform, IOrder order, String html) {
+        private String wapPayFormHtmlAccessUrl(int payPlatform, IPayDTO payDTO, String html) {
             String payPlatformName = payPlatformName(payPlatform);
-            File payHtmlFile = new File(String.format("%s/cPay/%s/wap_%s.html", CommonPaySpringUtil.appHome(), payPlatformName, order.getOutTradeNo()));
+            File payHtmlFile = new File(String.format("%s/cPay/%s/wap_%s.html", CommonPaySpringUtil.appHome(), payPlatformName, payDTO.getOutTradeNo()));
             FileUtil.writeString(html, payHtmlFile, StandardCharsets.UTF_8);
-            return String.format("%s/cPay/r/%s/wap_%s.html", commonPayProperties.getUrlPrefix(), payPlatformName, order.getOutTradeNo());
+            return String.format("%s/cPay/r/%s/wap_%s.html", commonPayProperties.getUrlPrefix(), payPlatformName, payDTO.getOutTradeNo());
         }
 
-        private String payQrCodeAccessUrl(int payPlatform, IOrder order, String content) {
+        private String payQrCodeAccessUrl(int payPlatform, IPayDTO payDTO, String content) {
             String payPlatformName = payPlatformName(payPlatform);
-            File qrCodeFile = FileUtil.touch(String.format("%s/cPay/%s/%s.png", CommonPaySpringUtil.appHome(), payPlatformName, order.getOutTradeNo()));
+            File qrCodeFile = FileUtil.touch(String.format("%s/cPay/%s/%s.png", CommonPaySpringUtil.appHome(), payPlatformName, payDTO.getOutTradeNo()));
             AbstractPayConfig payConfig = GlobalConfig.getPayConfig(payPlatform);
             int qrCodeWidth = payConfig.getQrCodeWidth();
             int qrCodeHeight = payConfig.getQrCodeHeight();
             QrCodeUtil.generate(content, qrCodeWidth, qrCodeHeight, qrCodeFile);
-            return String.format("%s/cPay/r/%s/%s.png", commonPayProperties.getUrlPrefix(), payPlatformName, order.getOutTradeNo());
+            return String.format("%s/cPay/r/%s/%s.png", commonPayProperties.getUrlPrefix(), payPlatformName, payDTO.getOutTradeNo());
         }
 
         private void clearTempFile(PayResponse payResponse) {

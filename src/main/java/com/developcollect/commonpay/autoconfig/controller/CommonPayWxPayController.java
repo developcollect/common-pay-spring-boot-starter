@@ -60,7 +60,7 @@ public class CommonPayWxPayController extends BaseController {
                 try {
                     Consumer<PayResponse> wxPayTempFileClear = GlobalConfig
                             .getPayConfig(PayPlatform.ALI_PAY)
-                            .getExtend("wxPayTempFileClear");
+                            .getExt("wxPayTempFileClear");
                     if (wxPayTempFileClear != null) {
                         wxPayTempFileClear.accept(payResponse);
                     }

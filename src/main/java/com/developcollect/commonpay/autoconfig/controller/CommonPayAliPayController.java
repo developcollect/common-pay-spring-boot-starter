@@ -59,7 +59,7 @@ public class CommonPayAliPayController extends BaseController {
                 try {
                     Consumer<PayResponse> aliPayTempFileClear = GlobalConfig
                             .getPayConfig(PayPlatform.ALI_PAY)
-                            .getExtend("aliPayTempFileClear");
+                            .getExt("aliPayTempFileClear");
                     if (aliPayTempFileClear != null) {
                         aliPayTempFileClear.accept(payResponse);
                     }
