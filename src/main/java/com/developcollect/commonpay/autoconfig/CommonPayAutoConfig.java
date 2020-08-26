@@ -12,6 +12,7 @@ import com.developcollect.commonpay.pay.IPayDTO;
 import com.developcollect.commonpay.pay.IRefundDTO;
 import com.developcollect.commonpay.pay.PayResponse;
 import com.developcollect.dcinfra.utils.LambdaUtil;
+import com.developcollect.dcinfra.utils.spring.SpringUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,7 +51,7 @@ import java.util.function.Supplier;
 @Slf4j
 @ComponentScan(basePackages = "com.developcollect.commonpay.autoconfig.controller")
 @EnableConfigurationProperties(CommonPayProperties.class)
-@Import({GlobalConfig.class, CommonPayWebMvcConfig.class, CommonPaySpringUtil.class})
+@Import({GlobalConfig.class, CommonPayWebMvcConfig.class, SpringUtil.class})
 @Configuration
 @RequiredArgsConstructor
 public class CommonPayAutoConfig {
@@ -411,7 +412,7 @@ public class CommonPayAutoConfig {
         @Bean
         IPayBroadcaster payBroadcaster() {
             return payResponse -> {
-                CommonPaySpringUtil.publishEvent(new PayEvent(payResponse));
+                SpringUtil.publishEvent(new PayEvent(payResponse));
                 return true;
             };
         }
@@ -423,7 +424,7 @@ public class CommonPayAutoConfig {
         @Bean
         IRefundBroadcaster refundBroadcaster() {
             return refundResponse -> {
-                CommonPaySpringUtil.publishEvent(new RefundEvent(refundResponse));
+                SpringUtil.publishEvent(new RefundEvent(refundResponse));
                 return true;
             };
         }
@@ -431,21 +432,21 @@ public class CommonPayAutoConfig {
 
         private String pcPayFormHtmlAccessUrl(int payPlatform, IPayDTO payDTO, String html) {
             String payPlatformName = payPlatformName(payPlatform);
-            File payHtmlFile = new File(String.format("%s/cPay/%s/%s.html", CommonPaySpringUtil.appHome(), payPlatformName, payDTO.getOutTradeNo()));
+            File payHtmlFile = new File(String.format("%s/cPay/%s/%s.html", SpringUtil.appHome(), payPlatformName, payDTO.getOutTradeNo()));
             FileUtil.writeString(html, payHtmlFile, StandardCharsets.UTF_8);
             return String.format("%s/cPay/r/%s/%s.html", commonPayProperties.getUrlPrefix(), payPlatformName, payDTO.getOutTradeNo());
         }
 
         private String wapPayFormHtmlAccessUrl(int payPlatform, IPayDTO payDTO, String html) {
             String payPlatformName = payPlatformName(payPlatform);
-            File payHtmlFile = new File(String.format("%s/cPay/%s/wap_%s.html", CommonPaySpringUtil.appHome(), payPlatformName, payDTO.getOutTradeNo()));
+            File payHtmlFile = new File(String.format("%s/cPay/%s/wap_%s.html", SpringUtil.appHome(), payPlatformName, payDTO.getOutTradeNo()));
             FileUtil.writeString(html, payHtmlFile, StandardCharsets.UTF_8);
             return String.format("%s/cPay/r/%s/wap_%s.html", commonPayProperties.getUrlPrefix(), payPlatformName, payDTO.getOutTradeNo());
         }
 
         private String payQrCodeAccessUrl(int payPlatform, IPayDTO payDTO, String content) {
             String payPlatformName = payPlatformName(payPlatform);
-            File qrCodeFile = FileUtil.touch(String.format("%s/cPay/%s/%s.png", CommonPaySpringUtil.appHome(), payPlatformName, payDTO.getOutTradeNo()));
+            File qrCodeFile = FileUtil.touch(String.format("%s/cPay/%s/%s.png", SpringUtil.appHome(), payPlatformName, payDTO.getOutTradeNo()));
             AbstractPayConfig payConfig = GlobalConfig.getPayConfig(payPlatform);
             int qrCodeWidth = payConfig.getQrCodeWidth();
             int qrCodeHeight = payConfig.getQrCodeHeight();
@@ -455,7 +456,7 @@ public class CommonPayAutoConfig {
 
         private void clearTempFile(PayResponse payResponse) {
             String payPlatformName = payPlatformName(payResponse.getPayPlatform());
-            String appHome = CommonPaySpringUtil.appHome();
+            String appHome = SpringUtil.appHome();
             String outTradeNo = payResponse.getOutTradeNo();
             FileUtil.del(String.format("%s/cPay/%s/%s.png", appHome, payPlatformName, outTradeNo));
             FileUtil.del(String.format("%s/cPay/%s/%s.html", appHome, payPlatformName, outTradeNo));

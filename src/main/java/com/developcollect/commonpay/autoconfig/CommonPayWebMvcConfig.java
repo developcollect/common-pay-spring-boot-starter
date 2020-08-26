@@ -1,5 +1,6 @@
 package com.developcollect.commonpay.autoconfig;
 
+import com.developcollect.dcinfra.utils.spring.SpringUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.context.annotation.Configuration;
@@ -19,7 +20,7 @@ public class CommonPayWebMvcConfig implements WebMvcConfigurer {
      */
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        String path = CommonPaySpringUtil.appHome();
+        String path = SpringUtil.appHome();
         registry.addResourceHandler("/cPay/r/wxpay/**").addResourceLocations("file:" + path + "/cPay/wxpay/");
         registry.addResourceHandler("/cPay/r/alipay/**").addResourceLocations("file:" + path + "/cPay/alipay/");
     }
