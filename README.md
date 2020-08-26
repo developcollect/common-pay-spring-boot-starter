@@ -14,22 +14,22 @@
 <dependency>
     <groupId>com.developcollect</groupId>
     <artifactId>common-pay-spring-boot-starter</artifactId>
-    <version>1.8.3</version>
+    <version>2.0.1</version>
 </dependency>
 ```
 
 ##### Gradle
 
 ```groovy
-implementation 'com.developcollect:common-pay-spring-boot-starter:1.8.3'
+implementation 'com.developcollect:common-pay-spring-boot-starter:2.0.1'
 ```
 
 ##### 非Maven项目
 
 点击以下任一链接，下载`common-pay-spring-boot-starter-X.X.X.jar`即可：
 
-- [Maven中央仓库1](https://repo1.maven.org/maven2/com/developcollect/common-pay-spring-boot-starter/1.8.3/)
-- [Maven中央仓库2](https://repo2.maven.org/maven2/com/developcollect/common-pay-spring-boot-starter/1.8.3/)
+- [Maven中央仓库1](https://repo1.maven.org/maven2/com/developcollect/common-pay-spring-boot-starter/2.0.1/)
+- [Maven中央仓库2](https://repo2.maven.org/maven2/com/developcollect/common-pay-spring-boot-starter/2.0.1/)
 
 > 注意：common-pay-spring-boot-starter仅支持JDK8+
 
