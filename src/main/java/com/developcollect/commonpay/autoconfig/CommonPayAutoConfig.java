@@ -11,7 +11,7 @@ import com.developcollect.commonpay.notice.IRefundBroadcaster;
 import com.developcollect.commonpay.pay.IPayDTO;
 import com.developcollect.commonpay.pay.IRefundDTO;
 import com.developcollect.commonpay.pay.PayResponse;
-import com.developcollect.commonpay.utils.LambdaUtil;
+import com.developcollect.dcinfra.utils.LambdaUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
