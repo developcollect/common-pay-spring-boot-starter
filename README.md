@@ -42,9 +42,8 @@ autoconfig
   │  CommonPayAutoConfig.java                        // 自动配置器
   │  CommonPayConfigurer.java                        // common-pay配置器(重点)
   │  CommonPayProperties.java                        // 配置文件属性映射对象
-  │  CommonPaySerializeUtil.java                     // 序列化工具
-  │  CommonPaySpringUtil.java                        // spring 工具
   │  CommonPayWebMvcConfig.java                      // 静态资源映射配置
+  │  ExamplePayDTO.java                              // 示例PayDTO
   │  PayEvent.java                                   // 支付事件对象
   │  RefundEvent.java                                // 退款事件对象
   │  
