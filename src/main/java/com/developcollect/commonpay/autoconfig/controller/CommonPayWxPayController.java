@@ -133,12 +133,16 @@ public class CommonPayWxPayController extends BaseController {
     private RefundResponse toRefundResponse(Map<String, String> params) {
         RefundResponse refundResponse = new RefundResponse();
         refundResponse
-                .setSuccess("SUCCESS".equals(params.get("refund_status")))
                 .setRawObj((Serializable) params)
                 .setPayPlatform(PayPlatform.WX_PAY)
                 .setRefundNo(params.get("refund_id"))
-                .setOutRefundNo(params.get("out_refund_no"))
-                .setRefundTime(DateUtil.parseLocalDateTime(params.get("success_time"), "yyyy-MM-dd HH:mm:ss"));
+                .setOutRefundNo(params.get("out_refund_no"));
+        if ("SUCCESS".equals(params.get("refund_status"))) {
+            refundResponse.setStatus(RefundResponse.SUCCESS);
+            refundResponse.setRefundTime(DateUtil.parseLocalDateTime(params.get("success_time"), "yyyy-MM-dd HH:mm:ss"));
+        } else {
+            refundResponse.setStatus(RefundResponse.FAIL);
+        }
         return refundResponse;
     }
 
