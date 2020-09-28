@@ -6,8 +6,7 @@ import cn.hutool.core.util.StrUtil;
 import cn.hutool.extra.qrcode.QrCodeUtil;
 import com.developcollect.commonpay.PayPlatform;
 import com.developcollect.commonpay.config.*;
-import com.developcollect.commonpay.notice.IPayBroadcaster;
-import com.developcollect.commonpay.notice.IRefundBroadcaster;
+import com.developcollect.commonpay.notice.*;
 import com.developcollect.commonpay.pay.IPayDTO;
 import com.developcollect.commonpay.pay.IRefundDTO;
 import com.developcollect.commonpay.pay.PayResponse;
@@ -108,6 +107,20 @@ public class CommonPayAutoConfig {
          */
         private IRefundBroadcaster refundBroadcaster;
 
+        /**
+         * 未确认订单提取器
+         */
+        private IUnconfirmedOrderFetcher unconfirmedOrderFetcher;
+
+        /**
+         * 未确认提现单提取器
+         */
+        private IUnconfirmedTransferFetcher unconfirmedTransferFetcher;
+
+        /**
+         * 未确认退款单提取器
+         */
+        private IUnconfirmedRefundFetcher unconfirmedRefundFetcher;
 
 
         // 注意自动注入是指定了bean的名称的
@@ -137,6 +150,21 @@ public class CommonPayAutoConfig {
         @Autowired
         public void setRefundBroadcaster(IRefundBroadcaster refundBroadcaster) {
             this.refundBroadcaster = refundBroadcaster;
+        }
+
+        @Autowired(required = false)
+        public void setUnconfirmedOrderFetcher(IUnconfirmedOrderFetcher unconfirmedOrderFetcher) {
+            this.unconfirmedOrderFetcher = unconfirmedOrderFetcher;
+        }
+
+        @Autowired(required = false)
+        public void setUnconfirmedRefundFetcher(IUnconfirmedRefundFetcher unconfirmedRefundFetcher) {
+            this.unconfirmedRefundFetcher = unconfirmedRefundFetcher;
+        }
+
+        @Autowired(required = false)
+        public void setUnconfirmedTransferFetcher(IUnconfirmedTransferFetcher unconfirmedTransferFetcher) {
+            this.unconfirmedTransferFetcher = unconfirmedTransferFetcher;
         }
 
         @Override
@@ -187,6 +215,11 @@ public class CommonPayAutoConfig {
             if (payFactory != null) {
                 globalConfig.setPayFactory(payFactory);
             }
+
+            // 设置未确认支付订单提取器
+            globalConfig.setUnconfirmedOrderFetcher(unconfirmedOrderFetcher);
+            globalConfig.setUnconfirmedRefundFetcher(unconfirmedRefundFetcher);
+            globalConfig.setUnconfirmedTransferFetcher(unconfirmedTransferFetcher);
         }
 
         // region 支付宝支付配置

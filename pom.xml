@@ -12,7 +12,7 @@
 
     <groupId>com.developcollect</groupId>
     <artifactId>common-pay-spring-boot-starter</artifactId>
-    <version>2.0.1</version>
+    <version>2.1.0</version>
 
     <name>common-pay-spring-boot-starter</name>
     <url>https://github.com/developcollect/common-pay-spring-boot-starter</url>
@@ -51,7 +51,7 @@
 
 
         <lombok.version>1.18.12</lombok.version>
-        <common-pay.version>[2.0.0,2.1.0)</common-pay.version>
+        <common-pay.version>[2.1.0,2.2.0)</common-pay.version>
         <annotations.version>3.0.1</annotations.version>
     </properties>
 
