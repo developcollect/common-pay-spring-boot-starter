@@ -244,7 +244,10 @@ public class CommonPayAutoConfig {
                 @Qualifier("aliPayPayQrCodeAccessUrlGenerator") BiFunction<IPayDTO, String, String> aliPayPayQrCodeAccessUrlGenerator,
                 @Qualifier("aliPayPcPayFormHtmlAccessUrlGenerator") BiFunction<IPayDTO, String, String> aliPayPcPayFormHtmlAccessUrlGenerator,
                 @Qualifier("aliPayWapPayFormHtmlAccessUrlGenerator") BiFunction<IPayDTO, String, String> aliPayWapPayFormHtmlAccessUrlGenerator,
-                @Qualifier("aliPayTempFileClear") Consumer<PayResponse> aliPayTempFileClear
+                @Qualifier("aliPayTempFileClear") Consumer<PayResponse> aliPayTempFileClear,
+                @Nullable @Qualifier("alipayAppCertContentSupplier") Supplier<String> alipayAppCertContentSupplier,
+                @Nullable @Qualifier("alipayCertContentSupplier") Supplier<String> alipayCertContentSupplier,
+                @Nullable @Qualifier("alipayRootCertContentSupplier") Supplier<String> alipayRootCertContentSupplier
         ) {
             AliPayProperties aliPayProperties = commonPayProperties.getAlipay();
             if (StrUtil.isBlank(aliPayProperties.getAppid())) {
@@ -253,9 +256,13 @@ public class CommonPayAutoConfig {
             if (StrUtil.isBlank(aliPayProperties.getPrivateKey())) {
                 throw new IllegalArgumentException("alipay private key can not be blank");
             }
-            if (StrUtil.isBlank(aliPayProperties.getPublicKey())) {
-                throw new IllegalArgumentException("alipay public key can not be blank");
+            // 证书和密钥文件不能同时为空
+            if (alipayAppCertContentSupplier == null && alipayCertContentSupplier == null && alipayRootCertContentSupplier == null) {
+                if (StrUtil.isBlank(aliPayProperties.getPublicKey())) {
+                    throw new IllegalArgumentException("alipay public key can not be blank");
+                }
             }
+
 
             return new Supplier<AliPayConfig>() {
 
@@ -267,6 +274,9 @@ public class CommonPayAutoConfig {
                             .setAppId(aliPayProperties.getAppid())
                             .setPrivateKey(aliPayProperties.getPrivateKey())
                             .setPublicKey(aliPayProperties.getPublicKey())
+                            .setAppCertContentSupplier(alipayAppCertContentSupplier)
+                            .setAlipayCertContentSupplier(alipayCertContentSupplier)
+                            .setAlipayRootCertContentSupplier(alipayRootCertContentSupplier)
                             .setCharset(aliPayProperties.getCharset())
                             .setSignType(aliPayProperties.getSignType())
                             .setDebug(aliPayProperties.isUseSandbox())
