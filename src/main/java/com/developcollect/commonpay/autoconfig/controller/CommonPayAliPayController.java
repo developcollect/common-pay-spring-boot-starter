@@ -2,11 +2,11 @@ package com.developcollect.commonpay.autoconfig.controller;
 
 import cn.hutool.core.date.DateUtil;
 import com.alipay.api.AlipayApiException;
-import com.alipay.api.internal.util.AlipaySignature;
 import com.developcollect.commonpay.PayPlatform;
 import com.developcollect.commonpay.config.AliPayConfig;
 import com.developcollect.commonpay.config.GlobalConfig;
 import com.developcollect.commonpay.pay.PayResponse;
+import com.developcollect.commonpay.pay.alipay.utils.AlipaySignature;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -14,7 +14,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
-import java.io.Serializable;
+import java.io.*;
+import java.security.NoSuchProviderException;
+import java.security.PublicKey;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
 import java.util.Map;
 import java.util.function.Consumer;
 
@@ -108,7 +113,11 @@ public class CommonPayAliPayController extends BaseController {
         AliPayConfig payConfig = GlobalConfig.getPayConfig(PayPlatform.ALI_PAY);
         boolean verify;
         try {
-            verify = AlipaySignature.rsaCheckV1(params, payConfig.getPublicKey(), payConfig.getCharset(), payConfig.getSignType());
+            if (payConfig.hasCert()) {
+                verify = AlipaySignature.rsaCertContentCheckV1(params, payConfig.getAlipayCertContentSupplier().get(), payConfig.getCharset(), payConfig.getSignType());
+            } else {
+                verify = AlipaySignature.rsaCheckV1(params, payConfig.getPublicKey(), payConfig.getCharset(), payConfig.getSignType());
+            }
         } catch (AlipayApiException e) {
             verify = false;
         }
